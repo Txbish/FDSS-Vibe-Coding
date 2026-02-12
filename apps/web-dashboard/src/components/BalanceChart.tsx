@@ -26,26 +26,31 @@ export function BalanceChart({ snapshots }: BalanceChartProps) {
   return (
     <ResponsiveContainer width="100%" height={360}>
       <LineChart data={data} margin={{ top: 5, right: 30, left: 20, bottom: 5 }}>
-        <CartesianGrid strokeDasharray="3 3" stroke="#2a2d3a" />
+        <CartesianGrid strokeDasharray="4 4" stroke="var(--line-muted)" />
         <XAxis
           dataKey="day"
-          stroke="#71717a"
+          stroke="var(--ink-muted)"
           fontSize={12}
           tickLine={false}
-          label={{ value: 'Day', position: 'insideBottomRight', offset: -5, fill: '#71717a' }}
+          label={{
+            value: 'Day',
+            position: 'insideBottomRight',
+            offset: -5,
+            fill: 'var(--ink-muted)',
+          }}
         />
         <YAxis
-          stroke="#71717a"
+          stroke="var(--ink-muted)"
           fontSize={12}
           tickLine={false}
           tickFormatter={(v: number) => `$${v.toLocaleString()}`}
         />
         <Tooltip
           contentStyle={{
-            backgroundColor: '#1a1d27',
-            border: '1px solid #2a2d3a',
-            borderRadius: '8px',
-            color: '#e4e4e7',
+            backgroundColor: 'var(--paper-solid)',
+            border: '1px solid var(--ink-soft)',
+            borderRadius: '10px',
+            color: 'var(--ink)',
           }}
           formatter={(value: number, name: string) => [
             `$${value.toLocaleString(undefined, { minimumFractionDigits: 2 })}`,
@@ -53,20 +58,20 @@ export function BalanceChart({ snapshots }: BalanceChartProps) {
           ]}
           labelFormatter={(label: number) => `Day ${label}`}
         />
-        <ReferenceLine y={0} stroke="#ef4444" strokeDasharray="3 3" />
+        <ReferenceLine y={0} stroke="var(--danger)" strokeDasharray="4 4" />
         <Line
           type="monotone"
           dataKey="balance"
-          stroke="#6366f1"
-          strokeWidth={2}
+          stroke="var(--rust)"
+          strokeWidth={2.2}
           dot={false}
           name="Balance"
         />
         <Line
           type="monotone"
           dataKey="nav"
-          stroke="#22c55e"
-          strokeWidth={1.5}
+          stroke="var(--terra-green)"
+          strokeWidth={1.8}
           dot={false}
           name="NAV"
           strokeDasharray="5 5"

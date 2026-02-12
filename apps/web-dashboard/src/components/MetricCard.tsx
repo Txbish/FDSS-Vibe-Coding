@@ -5,7 +5,7 @@ interface MetricCardProps {
 }
 
 const VARIANT_COLORS = {
-  default: 'var(--text)',
+  default: 'var(--ink)',
   success: 'var(--success)',
   warning: 'var(--warning)',
   danger: 'var(--danger)',
