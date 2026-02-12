@@ -228,3 +228,48 @@ export const BranchResultSchema = z.object({
   branchAtDay: z.number().int().nonnegative(),
 });
 export type BranchResult = z.infer<typeof BranchResultSchema>;
+
+// ─── Branch Comparison (delta analysis) ─────────────────────────────────────────
+
+/** Structured delta analysis between baseline and branch simulation results */
+export const BranchComparisonDeltasSchema = z.object({
+  finalBalanceDiff: z.number(),
+  collapseProbabilityDiff: z.number(),
+  creditScoreDiff: z.number(),
+  navDiff: z.number(),
+  liquidityRatioDiff: z.number(),
+  shockResilienceIndexDiff: z.number(),
+  vibeStateChange: z.object({
+    from: VibeStateSchema,
+    to: VibeStateSchema,
+  }),
+  petStateChange: z.object({
+    from: PetStateSchema,
+    to: PetStateSchema,
+  }),
+});
+export type BranchComparisonDeltas = z.infer<typeof BranchComparisonDeltasSchema>;
+
+export const BranchComparisonResultSchema = z.object({
+  baseline: SimulationOutputSchema,
+  branch: SimulationOutputSchema,
+  branchAtDay: z.number().int().nonnegative(),
+  deltas: BranchComparisonDeltasSchema,
+});
+export type BranchComparisonResult = z.infer<typeof BranchComparisonResultSchema>;
+
+// ─── API Error Response ─────────────────────────────────────────────────────────
+
+export const ApiErrorSchema = z.object({
+  error: z.string(),
+  code: z.enum([
+    'VALIDATION_ERROR',
+    'ENGINE_ERROR',
+    'TIMEOUT_ERROR',
+    'PAYLOAD_TOO_LARGE',
+    'INTERNAL_ERROR',
+  ]),
+  details: z.unknown().optional(),
+});
+export type ApiError = z.infer<typeof ApiErrorSchema>;
+export type ApiErrorCode = ApiError['code'];
