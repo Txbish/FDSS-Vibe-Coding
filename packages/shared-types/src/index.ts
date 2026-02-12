@@ -17,8 +17,22 @@ export const ExchangeRateSchema = z.object({
   to: CurrencyCodeSchema,
   rate: z.number().positive(),
   date: z.string().date(), // YYYY-MM-DD
+  /** Daily volatility factor for RNG-based rate fluctuation (default 0 = stable) */
+  volatility: z.number().min(0).max(1).default(0),
 });
 export type ExchangeRate = z.infer<typeof ExchangeRateSchema>;
+
+/** Tracks a single currency conversion for precision audit */
+export const CurrencyConversionLogSchema = z.object({
+  day: z.number().int().nonnegative(),
+  from: CurrencyCodeSchema,
+  to: CurrencyCodeSchema,
+  originalAmount: z.number(),
+  convertedAmount: z.number(),
+  rateUsed: z.number().positive(),
+  context: z.string(), // e.g. 'income:Salary', 'expense:Rent', 'liquidation:Stock'
+});
+export type CurrencyConversionLog = z.infer<typeof CurrencyConversionLogSchema>;
 
 // ─── Asset Definitions ──────────────────────────────────────────────────────────
 
