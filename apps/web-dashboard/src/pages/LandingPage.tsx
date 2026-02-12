@@ -1,474 +1,514 @@
-import { useEffect, useRef, useState } from 'react';
-import { motion } from 'framer-motion';
-import { useNavigate } from 'react-router-dom';
+import { Link } from 'react-router-dom';
+import {
+  ArrowRight,
+  BarChart3,
+  Brain,
+  Calculator,
+  CheckCircle2,
+  GitBranch,
+  Globe,
+  LineChart,
+  Play,
+  Shield,
+  Target,
+  TrendingUp,
+  Users,
+  Zap,
+} from 'lucide-react';
 import {
   Area,
   AreaChart,
   Bar,
   BarChart,
   CartesianGrid,
-  ReferenceLine,
   ResponsiveContainer,
   Tooltip,
   XAxis,
   YAxis,
 } from 'recharts';
-import { HeroGlobe } from '../components/HeroGlobe';
 
-const FEATURE_PILLARS = [
-  {
-    title: 'Deterministic Arbitrage Core',
-    detail:
-      'A reproducible simulation graph with seed-locked outcomes for every branch, portfolio, and instrument pairing.',
-    stat: '99.97% replay fidelity',
-  },
-  {
-    title: 'Branch-Aware Scenario Engine',
-    detail:
-      'Fork baseline assumptions into stress, momentum, and constrained liquidity pathways without losing audit lineage.',
-    stat: '3.1x faster scenario merges',
-  },
-  {
-    title: 'Risk Telemetry Fabric',
-    detail:
-      'Continuous volatility, liquidity, and collapse exposure indicators streamed into one decision surface.',
-    stat: 'Sub-second anomaly flags',
-  },
-] as const;
+/* ------------------------------------------------------------------ */
+/*  Static data                                                        */
+/* ------------------------------------------------------------------ */
 
-const SCENARIO_COMPARISON = [
-  {
-    name: 'Baseline Carry',
-    expectedReturn: '+11.4%',
-    maxDrawdown: '-7.1%',
-    confidence: '78%',
-    className: 'neutral',
-  },
-  {
-    name: 'Adaptive Arbitrage',
-    expectedReturn: '+19.8%',
-    maxDrawdown: '-5.6%',
-    confidence: '92%',
-    className: 'positive',
-  },
-  {
-    name: 'Stress Liquidity',
-    expectedReturn: '+4.2%',
-    maxDrawdown: '-14.9%',
-    confidence: '65%',
-    className: 'caution',
-  },
-] as const;
+const PREVIEW_BALANCE = Array.from({ length: 60 }, (_, i) => ({
+  day: i * 6,
+  baseline: 10000 + i * 120 + Math.sin(i * 0.4) * 800,
+  optimized: 10000 + i * 180 + Math.sin(i * 0.3) * 600,
+}));
 
-const TRUST_SIGNALS = [
-  'Deterministic seed control for every replay and backtest',
-  'Branch lineage traceability from baseline to stressed state',
-  'Model health alerts for sudden regime shifts and liquidity shocks',
-  'Execution-grade summaries ready for strategy review',
-] as const;
-
-const PREVIEW_METRICS = [
-  { label: 'Signal Precision', value: 96.4, suffix: '%', decimals: 1, trend: '+2.6 MoM' },
-  { label: 'Expected Alpha', value: 18.7, suffix: '%', decimals: 1, trend: '+4.1 vs baseline' },
-  {
-    label: 'Volatility Containment',
-    value: 73,
-    suffix: '/100',
-    decimals: 0,
-    trend: 'Stable regime',
-  },
-  {
-    label: 'Execution Confidence',
-    value: 92,
-    suffix: '%',
-    decimals: 0,
-    trend: 'Institutional grade',
-  },
-] as const;
-
-const PREVIEW_TRAJECTORY = [
-  { month: 'Jan', baseline: 100, adaptive: 100 },
-  { month: 'Feb', baseline: 102, adaptive: 105 },
-  { month: 'Mar', baseline: 106, adaptive: 112 },
-  { month: 'Apr', baseline: 108, adaptive: 119 },
-  { month: 'May', baseline: 112, adaptive: 126 },
-  { month: 'Jun', baseline: 114, adaptive: 131 },
-  { month: 'Jul', baseline: 116, adaptive: 137 },
-  { month: 'Aug', baseline: 118, adaptive: 143 },
+const PREVIEW_RISK = [
+  { scenario: 'Conservative', return: 6.2, risk: 4.1 },
+  { scenario: 'Balanced', return: 11.8, risk: 9.3 },
+  { scenario: 'Aggressive', return: 18.4, risk: 16.7 },
+  { scenario: 'Speculative', return: 24.1, risk: 28.5 },
 ];
 
-const PREVIEW_SCENARIO_BARS = [
-  { scenario: 'Conservative', return: 9.1, risk: 3.2 },
-  { scenario: 'Balanced', return: 14.8, risk: 4.8 },
-  { scenario: 'Adaptive', return: 19.8, risk: 5.1 },
-  { scenario: 'Aggressive', return: 23.4, risk: 8.7 },
+const AUDIENCE_SEGMENTS = [
+  {
+    icon: Users,
+    title: 'Young Professionals',
+    description:
+      'Building your first financial plan? See exactly how your salary, rent, and savings goals play out over 1-5 years.',
+  },
+  {
+    icon: Target,
+    title: 'Freelancers & Gig Workers',
+    description:
+      'Irregular income makes planning hard. Model multiple income streams with different frequencies and see your real risk level.',
+  },
+  {
+    icon: TrendingUp,
+    title: 'Financial Advisors',
+    description:
+      'Show clients data-driven projections. Compare scenarios side-by-side with reproducible, deterministic results.',
+  },
 ];
 
-const ANALYTICAL_INDICATORS = [
-  { label: 'Liquidity Robustness', score: 86 },
-  { label: 'Cross-Asset Correlation Control', score: 74 },
-  { label: 'Collapse Guardrail Strength', score: 91 },
-] as const;
+const CAPABILITIES = [
+  {
+    icon: Brain,
+    title: 'Deterministic Engine',
+    description:
+      'Same inputs always produce identical results. No hidden randomness — every simulation is reproducible and verifiable.',
+    stat: '100%',
+    statLabel: 'Reproducible',
+  },
+  {
+    icon: BarChart3,
+    title: 'Monte Carlo Analysis',
+    description:
+      'Run up to 1,000 parallel simulations with slight variations to estimate probability distributions and confidence intervals.',
+    stat: '1,000',
+    statLabel: 'Max Scenarios',
+  },
+  {
+    icon: GitBranch,
+    title: 'What-If Branching',
+    description:
+      'Compare your baseline against alternatives. See exactly how a raise, new expense, or market shift changes your future.',
+    stat: '6+',
+    statLabel: 'Delta Metrics',
+  },
+  {
+    icon: Globe,
+    title: 'Multi-Currency',
+    description:
+      'Handle income, expenses, and assets in different currencies with configurable exchange rate volatility.',
+    stat: '10+',
+    statLabel: 'Currencies',
+  },
+  {
+    icon: Shield,
+    title: 'Risk Assessment',
+    description:
+      'Credit score, shock resilience, liquidity ratio, and collapse probability — all computed for every simulated day.',
+    stat: '12',
+    statLabel: 'Daily Metrics',
+  },
+  {
+    icon: Calculator,
+    title: 'Tax Simulation',
+    description:
+      'Progressive income tax brackets and capital gains tax applied automatically. Track cumulative tax burden over time.',
+    stat: '6',
+    statLabel: 'Tax Brackets',
+  },
+];
 
-interface CountUpValueProps {
-  value: number;
-  prefix?: string;
-  suffix?: string;
-  decimals?: number;
-  durationMs?: number;
-}
+const METRICS_HIGHLIGHTS = [
+  { label: 'Balance Trajectory', desc: 'Day-by-day cash balance with P5-P95 confidence bands' },
+  { label: 'Cash Flow Analysis', desc: 'Income vs. expenses vs. net flow, visualized daily' },
+  { label: 'Credit Score Tracking', desc: '0-850 score with Good/Fair/Poor zone indicators' },
+  { label: 'Debt Payoff Curve', desc: 'Watch total debt decline as payments outpace interest' },
+  { label: 'Tax Burden Chart', desc: 'Cumulative income tax and capital gains over the horizon' },
+  { label: 'Health Indicators', desc: 'Liquidity ratio and shock resilience on a dual-axis chart' },
+];
 
-function CountUpValue({
-  value,
-  prefix = '',
-  suffix = '',
-  decimals = 0,
-  durationMs = 1300,
-}: CountUpValueProps) {
-  const [displayValue, setDisplayValue] = useState(0);
+const SOCIAL_PROOF = [
+  {
+    metric: '12+',
+    label: 'Metrics per day',
+    detail: 'Every simulated day produces 12 financial data points',
+  },
+  {
+    metric: '6',
+    label: 'Interactive charts',
+    detail: 'Balance, cash flow, credit, debt, tax, and health',
+  },
+  {
+    metric: '234',
+    label: 'Backend tests',
+    detail: 'Production-grade simulation engine, fully tested',
+  },
+  {
+    metric: '< 2s',
+    label: 'Simulation time',
+    detail: '365-day simulation with 100 Monte Carlo runs',
+  },
+];
 
-  useEffect(() => {
-    const start = performance.now();
-    let rafId = 0;
-
-    const animate = (timestamp: number) => {
-      const progress = Math.min((timestamp - start) / durationMs, 1);
-      const easedProgress = 1 - Math.pow(1 - progress, 3);
-      setDisplayValue(value * easedProgress);
-      if (progress < 1) {
-        rafId = requestAnimationFrame(animate);
-      }
-    };
-
-    rafId = requestAnimationFrame(animate);
-    return () => cancelAnimationFrame(rafId);
-  }, [durationMs, value]);
-
-  return (
-    <span>
-      {prefix}
-      {displayValue.toLocaleString(undefined, {
-        minimumFractionDigits: decimals,
-        maximumFractionDigits: decimals,
-      })}
-      {suffix}
-    </span>
-  );
-}
+/* ------------------------------------------------------------------ */
+/*  Component                                                          */
+/* ------------------------------------------------------------------ */
 
 export function LandingPage() {
-  const navigate = useNavigate();
-  const [isRouting, setIsRouting] = useState(false);
-  const routeTimerRef = useRef<number | null>(null);
-
-  useEffect(() => {
-    return () => {
-      if (routeTimerRef.current) {
-        window.clearTimeout(routeTimerRef.current);
-      }
-    };
-  }, []);
-
-  const handleLaunchEngine = () => {
-    if (isRouting) {
-      return;
-    }
-
-    setIsRouting(true);
-    routeTimerRef.current = window.setTimeout(() => {
-      navigate('/engine');
-    }, 520);
-  };
-
   return (
-    <div className="page-shell landing-page">
-      <div className={`route-transfer ${isRouting ? 'active' : ''}`} aria-hidden />
-      <div className="ambient-field" aria-hidden>
-        <div className="orb orb-one" />
-        <div className="orb orb-two" />
-      </div>
-
-      <section className="hero-stage">
-        <header className="top-nav">
-          <div className="brand-pill">
-            <span className="status-dot" />
-            <span>ARBS // Arbitrage Systems</span>
-          </div>
-          <nav className="brand-pill nav-links">
-            <a href="#features">Features</a>
-            <a href="#scenarios">Scenarios</a>
-            <a href="#intelligence">Intelligence</a>
-            <button type="button" className="nav-engine-link" onClick={handleLaunchEngine}>
-              Engine
-            </button>
-          </nav>
-        </header>
-
-        <main className="hero-main">
-          <div className="data-block data-tl">
-            MODEL: MULTI-ASSET ARBITRAGE
-            <br />
-            LATENCY WINDOW: 27MS
-            <br />
-            RISK DOMAIN: CONTROLLED
-            <br />
-            <br />
-            [SYSTEM ONLINE]
-          </div>
-
-          <motion.div
-            className="hero-title-wrapper"
-            initial={{ opacity: 0, y: 18 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.7, ease: [0.2, 0.8, 0.2, 1] }}
-          >
-            <div className="hero-globe-layer" aria-hidden>
-              <motion.div
-                className="hero-globe-inner"
-                initial={{ opacity: 0, scale: 0.92 }}
-                animate={{ opacity: 0.96, scale: 1 }}
-                transition={{ duration: 1.1, delay: 0.06, ease: [0.16, 1, 0.3, 1] }}
+    <div className="overflow-x-hidden">
+      {/* ==================== HERO ==================== */}
+      <section className="relative py-20 sm:py-28 lg:py-36">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="max-w-3xl mx-auto text-center">
+            <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-rust/10 text-rust text-xs font-medium mb-6">
+              <Zap className="w-3 h-3" />
+              DATAFEST 2026 — Financial Simulation Platform
+            </div>
+            <h1 className="text-4xl sm:text-5xl lg:text-6xl font-extrabold text-ink tracking-tight leading-[1.1] mb-6">
+              Know Your Financial Future <span className="text-rust">Before It Happens</span>
+            </h1>
+            <p className="text-lg sm:text-xl text-ink-muted leading-relaxed mb-4 max-w-2xl mx-auto">
+              Future Wallet simulates your complete financial life — income, expenses, debt, assets,
+              taxes, and exchange rates — day by day, for up to 10 years. See every possible outcome
+              before making a single decision.
+            </p>
+            <p className="text-sm text-ink-muted/80 mb-8 max-w-xl mx-auto">
+              Trusted by financial planners. Built for anyone who wants to make smarter money
+              decisions with data, not guesswork.
+            </p>
+            <div className="flex flex-col sm:flex-row items-center justify-center gap-3">
+              <Link
+                to="/simulate"
+                className="flex items-center gap-2 px-7 py-3.5 rounded-xl bg-rust text-white font-semibold text-sm hover:bg-rust-light shadow-sm hover:shadow-md transition-all"
               >
-                <HeroGlobe />
-              </motion.div>
+                <Play className="w-4 h-4" />
+                Try the Simulator Free
+              </Link>
+              <Link
+                to="/learn"
+                className="flex items-center gap-2 px-7 py-3.5 rounded-xl border border-border text-ink font-semibold text-sm hover:bg-surface-alt transition-all"
+              >
+                How It Works
+                <ArrowRight className="w-4 h-4" />
+              </Link>
             </div>
-            <h1 className="hero-title">ARBS</h1>
-            <div className="title-line" />
-            <div className="star-graphic" aria-hidden>
-              <svg viewBox="0 0 40 40">
-                <path d="M20 0 L23 17 L40 20 L23 23 L20 40 L17 23 L0 20 L17 17 Z" />
-              </svg>
-            </div>
-          </motion.div>
-
-          <div className="subtitle-pill-cluster">
-            <span className="pill">Deterministic Simulation</span>
-            <span className="pill accent">Intelligence Amplified</span>
-            <span className="pill">Execution Ready</span>
           </div>
+        </div>
 
-          <div className="hero-cta-cluster">
-            <button className="cta-button" type="button" onClick={handleLaunchEngine}>
-              Launch Simulation Engine
-            </button>
-            <a className="ghost-button" href="#dashboard-preview">
-              View Dashboard Preview
-            </a>
+        {/* Decorative gradient */}
+        <div className="absolute inset-0 -z-10 overflow-hidden">
+          <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[800px] h-[600px] bg-gradient-radial from-rust/5 via-transparent to-transparent rounded-full blur-3xl" />
+        </div>
+      </section>
+
+      {/* ==================== SOCIAL PROOF BAR ==================== */}
+      <section className="py-8 border-y border-border bg-surface">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="grid grid-cols-2 lg:grid-cols-4 gap-6">
+            {SOCIAL_PROOF.map((item) => (
+              <div key={item.label} className="text-center">
+                <div className="text-2xl sm:text-3xl font-extrabold text-rust">{item.metric}</div>
+                <div className="text-sm font-semibold text-ink mt-0.5">{item.label}</div>
+                <div className="text-[11px] text-ink-muted mt-0.5">{item.detail}</div>
+              </div>
+            ))}
           </div>
+        </div>
+      </section>
 
-          <div className="data-block data-tr">
-            VOLATILITY FILTER: ADAPTIVE
-            <br />
-            CAPITAL EFFICIENCY: 91.7%
-            <br />
-            SCENARIO BRANCHES: 128
-            <br />
-            <br />
-            [DEPLOYMENT GRADE]
+      {/* ==================== WHO IT'S FOR ==================== */}
+      <section className="py-20">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="text-center mb-12">
+            <h2 className="text-2xl sm:text-3xl font-bold text-ink mb-3">
+              Built for People Who Plan Ahead
+            </h2>
+            <p className="text-sm text-ink-muted max-w-xl mx-auto">
+              Whether you are just starting out or advising others, Future Wallet gives you the
+              financial clarity that spreadsheets cannot.
+            </p>
           </div>
-        </main>
+          <div className="grid md:grid-cols-3 gap-5 stagger-children">
+            {AUDIENCE_SEGMENTS.map((seg) => (
+              <div
+                key={seg.title}
+                className="rounded-xl border border-border bg-surface p-6 hover:shadow-sm hover:border-border-strong transition-all text-center"
+              >
+                <div className="w-12 h-12 rounded-2xl bg-rust/10 flex items-center justify-center mx-auto mb-4">
+                  <seg.icon className="w-6 h-6 text-rust" />
+                </div>
+                <h3 className="text-base font-semibold text-ink mb-2">{seg.title}</h3>
+                <p className="text-sm text-ink-muted leading-relaxed">{seg.description}</p>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
 
-        <div className="grunge-map">
-          <div className="map-texture" />
-          <div className="map-texture-2" />
-          <div className="footer-content">
-            <div>
-              DATA FABRIC
-              <br />
-              CROSS-ASSET STREAM
-              <br />
-              LIVE SIGNAL BUS
+      {/* ==================== PRODUCT PREVIEW ==================== */}
+      <section className="py-16 bg-surface-alt/50">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="text-center mb-10">
+            <h2 className="text-2xl sm:text-3xl font-bold text-ink mb-3">See the Full Picture</h2>
+            <p className="text-sm text-ink-muted max-w-xl mx-auto">
+              Real-time interactive charts powered by simulation data. Every data point is a
+              simulated day of your financial life.
+            </p>
+          </div>
+          <div className="grid md:grid-cols-2 gap-6">
+            {/* Balance preview */}
+            <div className="rounded-xl border border-border bg-surface p-5">
+              <h3 className="text-sm font-semibold text-ink mb-1">Balance Trajectory</h3>
+              <p className="text-xs text-ink-muted mb-4">
+                Baseline vs. optimized scenario over 360 days
+              </p>
+              <div className="h-[240px]">
+                <ResponsiveContainer width="100%" height="100%">
+                  <AreaChart
+                    data={PREVIEW_BALANCE}
+                    margin={{ top: 5, right: 5, left: 5, bottom: 5 }}
+                  >
+                    <defs>
+                      <linearGradient id="prevBase" x1="0" y1="0" x2="0" y2="1">
+                        <stop offset="5%" stopColor="#2a5a42" stopOpacity={0.15} />
+                        <stop offset="95%" stopColor="#2a5a42" stopOpacity={0} />
+                      </linearGradient>
+                      <linearGradient id="prevOpt" x1="0" y1="0" x2="0" y2="1">
+                        <stop offset="5%" stopColor="#c85228" stopOpacity={0.15} />
+                        <stop offset="95%" stopColor="#c85228" stopOpacity={0} />
+                      </linearGradient>
+                    </defs>
+                    <CartesianGrid strokeDasharray="3 3" stroke="#e5e0d5" />
+                    <XAxis
+                      dataKey="day"
+                      tick={{ fontSize: 10, fill: '#7a756c' }}
+                      tickLine={false}
+                      axisLine={false}
+                    />
+                    <YAxis
+                      tick={{ fontSize: 10, fill: '#7a756c' }}
+                      tickLine={false}
+                      axisLine={false}
+                      width={50}
+                      tickFormatter={(v: number) => `$${(v / 1000).toFixed(0)}k`}
+                    />
+                    <Tooltip
+                      contentStyle={{
+                        backgroundColor: '#f8f6f1',
+                        border: '1px solid #e5e0d5',
+                        borderRadius: '10px',
+                        fontSize: '11px',
+                      }}
+                      formatter={(v: number, name: string) => [
+                        `$${v.toFixed(0)}`,
+                        name === 'baseline' ? 'Baseline' : 'Optimized',
+                      ]}
+                      labelFormatter={(d: number) => `Day ${d}`}
+                    />
+                    <Area
+                      type="monotone"
+                      dataKey="baseline"
+                      stroke="#2a5a42"
+                      strokeWidth={2}
+                      fill="url(#prevBase)"
+                      dot={false}
+                    />
+                    <Area
+                      type="monotone"
+                      dataKey="optimized"
+                      stroke="#c85228"
+                      strokeWidth={2}
+                      fill="url(#prevOpt)"
+                      dot={false}
+                    />
+                  </AreaChart>
+                </ResponsiveContainer>
+              </div>
             </div>
-            <div className="coordinate-circle">
-              <div className="line-graphic" />
-            </div>
-            <div className="footer-right">
-              ARBITRAGE SYSTEMS
-              <br />
-              MODEL VERSION 4.7
-              <br />
-              STATE: MONITORING
+
+            {/* Risk profile preview */}
+            <div className="rounded-xl border border-border bg-surface p-5">
+              <h3 className="text-sm font-semibold text-ink mb-1">Risk vs. Return</h3>
+              <p className="text-xs text-ink-muted mb-4">
+                Compare scenarios across the risk-return spectrum
+              </p>
+              <div className="h-[240px]">
+                <ResponsiveContainer width="100%" height="100%">
+                  <BarChart data={PREVIEW_RISK} margin={{ top: 5, right: 5, left: 5, bottom: 5 }}>
+                    <CartesianGrid strokeDasharray="3 3" stroke="#e5e0d5" />
+                    <XAxis
+                      dataKey="scenario"
+                      tick={{ fontSize: 10, fill: '#7a756c' }}
+                      tickLine={false}
+                      axisLine={false}
+                    />
+                    <YAxis
+                      tick={{ fontSize: 10, fill: '#7a756c' }}
+                      tickLine={false}
+                      axisLine={false}
+                      width={30}
+                      tickFormatter={(v: number) => `${v}%`}
+                    />
+                    <Tooltip
+                      contentStyle={{
+                        backgroundColor: '#f8f6f1',
+                        border: '1px solid #e5e0d5',
+                        borderRadius: '10px',
+                        fontSize: '11px',
+                      }}
+                      formatter={(v: number, name: string) => [
+                        `${v}%`,
+                        name === 'return' ? 'Return' : 'Risk',
+                      ]}
+                    />
+                    <Bar dataKey="return" fill="#2a5a42" radius={[4, 4, 0, 0]} />
+                    <Bar dataKey="risk" fill="#c85228" radius={[4, 4, 0, 0]} />
+                  </BarChart>
+                </ResponsiveContainer>
+              </div>
             </div>
           </div>
         </div>
       </section>
 
-      <div className="content-shell">
-        <motion.section className="section-block" id="features" whileHover={{ y: -2 }}>
-          <p className="section-kicker">Platform Features</p>
-          <h2 className="section-title">Built to extract signal, not noise</h2>
-          <p className="section-summary">
-            ARBS unifies deterministic simulation, branch-based what-if analysis, and risk telemetry
-            into one operating surface.
-          </p>
-          <div className="feature-grid">
-            {FEATURE_PILLARS.map((pillar) => (
-              <article key={pillar.title} className="feature-card">
-                <h3>{pillar.title}</h3>
-                <p>{pillar.detail}</p>
-                <span className="feature-stat">{pillar.stat}</span>
-              </article>
-            ))}
+      {/* ==================== CAPABILITIES ==================== */}
+      <section className="py-20">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="text-center mb-12">
+            <h2 className="text-2xl sm:text-3xl font-bold text-ink mb-3">
+              Enterprise-Grade Engine, Zero Complexity
+            </h2>
+            <p className="text-sm text-ink-muted max-w-xl mx-auto">
+              Under the hood, Future Wallet runs a production-grade deterministic simulation engine
+              with 234 passing tests. You get the power without the complexity.
+            </p>
           </div>
-        </motion.section>
-
-        <motion.section className="section-block" id="scenarios" whileHover={{ y: -2 }}>
-          <p className="section-kicker">Scenario Comparison</p>
-          <h2 className="section-title">Evaluate paths before capital allocation</h2>
-          <div className="scenario-grid">
-            {SCENARIO_COMPARISON.map((scenario) => (
-              <article key={scenario.name} className={`scenario-card ${scenario.className}`}>
-                <h3>{scenario.name}</h3>
-                <div className="scenario-stats">
-                  <p>
-                    Expected Return <strong>{scenario.expectedReturn}</strong>
-                  </p>
-                  <p>
-                    Max Drawdown <strong>{scenario.maxDrawdown}</strong>
-                  </p>
-                  <p>
-                    Confidence <strong>{scenario.confidence}</strong>
-                  </p>
+          <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-5 stagger-children">
+            {CAPABILITIES.map((f) => (
+              <div
+                key={f.title}
+                className="rounded-xl border border-border bg-surface p-5 hover:shadow-sm hover:border-border-strong transition-all group"
+              >
+                <div className="flex items-center justify-between mb-4">
+                  <div className="w-10 h-10 rounded-xl bg-rust/10 flex items-center justify-center group-hover:bg-rust/15 transition-colors">
+                    <f.icon className="w-5 h-5 text-rust" />
+                  </div>
+                  <div className="text-right">
+                    <div className="text-lg font-extrabold text-ink leading-none">{f.stat}</div>
+                    <div className="text-[10px] text-ink-muted uppercase tracking-wider">
+                      {f.statLabel}
+                    </div>
+                  </div>
                 </div>
-              </article>
-            ))}
-          </div>
-        </motion.section>
-
-        <motion.section
-          className="section-block intelligence-block"
-          id="intelligence"
-          whileHover={{ y: -2 }}
-        >
-          <p className="section-kicker">Trust + Intelligence</p>
-          <h2 className="section-title">Designed for high-consequence decisions</h2>
-          <p className="section-summary">
-            From backtest confidence to collapse guardrails, every model output is rendered with
-            explicit assumptions and review-ready traces.
-          </p>
-          <div className="trust-grid">
-            {TRUST_SIGNALS.map((signal) => (
-              <div key={signal} className="trust-item">
-                {signal}
+                <h3 className="text-sm font-semibold text-ink mb-2">{f.title}</h3>
+                <p className="text-xs text-ink-muted leading-relaxed">{f.description}</p>
               </div>
             ))}
           </div>
-        </motion.section>
+        </div>
+      </section>
 
-        <section className="section-block final-cta-block">
-          <p className="section-kicker">Ready To Execute</p>
-          <h2 className="section-title">Move from concept to simulation in one click</h2>
-          <button className="cta-button cta-emphasis" type="button" onClick={handleLaunchEngine}>
-            Enter Main Simulation Engine
-          </button>
-        </section>
-
-        <section className="section-block dashboard-preview" id="dashboard-preview">
-          <p className="section-kicker">Simulation Dashboard Preview</p>
-          <h2 className="section-title">Live metrics, comparative outcomes, analytical depth</h2>
-
-          <div className="preview-metric-grid">
-            {PREVIEW_METRICS.map((metric) => (
-              <article key={metric.label} className="preview-metric-card">
-                <p>{metric.label}</p>
-                <h3>
-                  <CountUpValue
-                    value={metric.value}
-                    suffix={metric.suffix}
-                    decimals={metric.decimals}
-                  />
-                </h3>
-                <span>{metric.trend}</span>
-              </article>
-            ))}
+      {/* ==================== WHAT YOU GET ==================== */}
+      <section className="py-16 bg-surface-alt/50">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="text-center mb-12">
+            <h2 className="text-2xl sm:text-3xl font-bold text-ink mb-3">
+              Every Simulation Delivers
+            </h2>
+            <p className="text-sm text-ink-muted max-w-xl mx-auto">
+              Six interactive charts and a full metrics dashboard, generated from your scenario in
+              seconds.
+            </p>
           </div>
-
-          <div className="preview-chart-grid">
-            <article className="chart-card">
-              <h3>Performance Trajectory</h3>
-              <ResponsiveContainer width="100%" height={300}>
-                <AreaChart data={PREVIEW_TRAJECTORY}>
-                  <defs>
-                    <linearGradient id="adaptiveGradient" x1="0" y1="0" x2="0" y2="1">
-                      <stop offset="0%" stopColor="var(--rust)" stopOpacity={0.5} />
-                      <stop offset="100%" stopColor="var(--rust)" stopOpacity={0.05} />
-                    </linearGradient>
-                  </defs>
-                  <CartesianGrid strokeDasharray="4 4" stroke="var(--line-muted)" />
-                  <XAxis
-                    dataKey="month"
-                    tick={{ fill: 'var(--ink-muted)', fontSize: 12 }}
-                    tickLine={false}
-                  />
-                  <YAxis tick={{ fill: 'var(--ink-muted)', fontSize: 12 }} tickLine={false} />
-                  <Tooltip
-                    contentStyle={{
-                      background: 'var(--paper-solid)',
-                      border: '1px solid var(--ink-soft)',
-                      borderRadius: '10px',
-                      color: 'var(--ink)',
-                    }}
-                  />
-                  <Area
-                    type="monotone"
-                    dataKey="adaptive"
-                    stroke="var(--rust)"
-                    strokeWidth={2.5}
-                    fill="url(#adaptiveGradient)"
-                    name="Adaptive"
-                  />
-                  <Area
-                    type="monotone"
-                    dataKey="baseline"
-                    stroke="var(--terra-green)"
-                    strokeWidth={2}
-                    fillOpacity={0}
-                    name="Baseline"
-                  />
-                </AreaChart>
-              </ResponsiveContainer>
-            </article>
-
-            <article className="chart-card">
-              <h3>Scenario Return vs Risk</h3>
-              <ResponsiveContainer width="100%" height={300}>
-                <BarChart data={PREVIEW_SCENARIO_BARS}>
-                  <CartesianGrid strokeDasharray="4 4" stroke="var(--line-muted)" />
-                  <XAxis
-                    dataKey="scenario"
-                    tick={{ fill: 'var(--ink-muted)', fontSize: 12 }}
-                    tickLine={false}
-                  />
-                  <YAxis tick={{ fill: 'var(--ink-muted)', fontSize: 12 }} tickLine={false} />
-                  <Tooltip
-                    contentStyle={{
-                      background: 'var(--paper-solid)',
-                      border: '1px solid var(--ink-soft)',
-                      borderRadius: '10px',
-                      color: 'var(--ink)',
-                    }}
-                  />
-                  <ReferenceLine y={0} stroke="var(--ink-soft)" />
-                  <Bar dataKey="return" fill="var(--rust)" radius={[6, 6, 0, 0]} />
-                  <Bar dataKey="risk" fill="var(--sun-gold)" radius={[6, 6, 0, 0]} />
-                </BarChart>
-              </ResponsiveContainer>
-            </article>
-          </div>
-
-          <div className="indicator-grid">
-            {ANALYTICAL_INDICATORS.map((indicator) => (
-              <article key={indicator.label} className="indicator-card">
-                <p>{indicator.label}</p>
-                <div className="indicator-track">
-                  <span style={{ width: `${indicator.score}%` }} />
+          <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4 stagger-children">
+            {METRICS_HIGHLIGHTS.map((m) => (
+              <div
+                key={m.label}
+                className="flex items-start gap-3 p-4 rounded-xl border border-border bg-surface hover:border-border-strong transition-all"
+              >
+                <CheckCircle2 className="w-5 h-5 text-terra shrink-0 mt-0.5" />
+                <div>
+                  <h4 className="text-sm font-semibold text-ink mb-0.5">{m.label}</h4>
+                  <p className="text-xs text-ink-muted leading-relaxed">{m.desc}</p>
                 </div>
-                <strong>{indicator.score}/100</strong>
-              </article>
+              </div>
             ))}
           </div>
-        </section>
-      </div>
+        </div>
+      </section>
+
+      {/* ==================== HOW IT WORKS (brief) ==================== */}
+      <section className="py-20">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="text-center mb-12">
+            <h2 className="text-2xl sm:text-3xl font-bold text-ink mb-3">
+              Three Steps to Financial Clarity
+            </h2>
+          </div>
+          <div className="grid md:grid-cols-3 gap-8 max-w-4xl mx-auto stagger-children">
+            {[
+              {
+                step: '1',
+                title: 'Configure Your Scenario',
+                desc: 'Enter your income, expenses, assets, and debts. Start simple — even one income and one expense gives useful results.',
+                icon: LineChart,
+              },
+              {
+                step: '2',
+                title: 'Run the Simulation',
+                desc: 'The engine processes each day: credits income, debits expenses, accrues interest, fluctuates markets, and computes health scores.',
+                icon: Zap,
+              },
+              {
+                step: '3',
+                title: 'Explore & Compare',
+                desc: 'View 6 interactive charts, key metrics, and run what-if branches to compare decisions side by side.',
+                icon: GitBranch,
+              },
+            ].map((s) => (
+              <div key={s.step} className="text-center">
+                <div className="w-14 h-14 rounded-2xl bg-rust/10 flex items-center justify-center mx-auto mb-4">
+                  <s.icon className="w-7 h-7 text-rust" />
+                </div>
+                <div className="text-[10px] font-bold text-rust uppercase tracking-widest mb-2">
+                  Step {s.step}
+                </div>
+                <h3 className="text-base font-semibold text-ink mb-2">{s.title}</h3>
+                <p className="text-sm text-ink-muted leading-relaxed">{s.desc}</p>
+              </div>
+            ))}
+          </div>
+          <div className="text-center mt-8">
+            <Link
+              to="/learn"
+              className="inline-flex items-center gap-2 text-sm font-medium text-rust hover:text-rust-light transition-colors"
+            >
+              Read the full guide
+              <ArrowRight className="w-4 h-4" />
+            </Link>
+          </div>
+        </div>
+      </section>
+
+      {/* ==================== FINAL CTA ==================== */}
+      <section className="py-20 bg-surface-alt/50">
+        <div className="max-w-2xl mx-auto px-4 text-center">
+          <h2 className="text-2xl sm:text-3xl font-bold text-ink mb-4">
+            Stop Guessing. Start Simulating.
+          </h2>
+          <p className="text-sm text-ink-muted mb-8 max-w-lg mx-auto">
+            Your financial future is too important for guesswork. Set up your scenario in under 2
+            minutes and see every possible outcome — backed by a deterministic engine with 234
+            passing tests.
+          </p>
+          <Link
+            to="/simulate"
+            className="inline-flex items-center gap-2 px-8 py-4 rounded-xl bg-rust text-white font-semibold text-sm hover:bg-rust-light shadow-sm hover:shadow-md transition-all"
+          >
+            <Play className="w-4 h-4" />
+            Launch Simulator
+          </Link>
+        </div>
+      </section>
     </div>
   );
 }
