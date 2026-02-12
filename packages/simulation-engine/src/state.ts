@@ -12,6 +12,7 @@ import type {
   IncomeStream,
   Liability,
   PetState,
+  TaxConfig,
   VibeState,
 } from '@future-wallet/shared-types';
 
@@ -32,12 +33,22 @@ export interface SimulationState {
   incomeStreams: IncomeStream[];
   expenses: Expense[];
   exchangeRates: ExchangeRate[];
+  taxConfig: TaxConfig | undefined;
   creditScore: number;
   totalRealizedGains: Decimal;
+  totalTaxPaid: Decimal;
   shockCount: number;
   recoveryDays: number;
   consecutiveDeficitDays: number;
   collapseDay: number | null;
+  // Rolling shock history for clustering density
+  shockDays: number[];
+  // Balance history for recovery slope
+  balanceHistory: number[];
+  // Last deficit exit balance for recovery tracking
+  lastDeficitExitDay: number | null;
+  lastDeficitExitBalance: number | null;
+  currentRecoverySlope: number;
 }
 
 /**
@@ -51,6 +62,7 @@ export function createInitialState(params: {
   incomeStreams: IncomeStream[];
   expenses: Expense[];
   exchangeRates: ExchangeRate[];
+  taxConfig?: TaxConfig;
 }): SimulationState {
   return {
     day: 0,
@@ -61,12 +73,19 @@ export function createInitialState(params: {
     incomeStreams: deepClone(params.incomeStreams),
     expenses: deepClone(params.expenses),
     exchangeRates: deepClone(params.exchangeRates),
+    taxConfig: params.taxConfig ? deepClone(params.taxConfig) : undefined,
     creditScore: 650, // starting credit score
     totalRealizedGains: new Decimal(0),
+    totalTaxPaid: new Decimal(0),
     shockCount: 0,
     recoveryDays: 0,
     consecutiveDeficitDays: 0,
     collapseDay: null,
+    shockDays: [],
+    balanceHistory: [],
+    lastDeficitExitDay: null,
+    lastDeficitExitBalance: null,
+    currentRecoverySlope: 0,
   };
 }
 
@@ -82,10 +101,12 @@ export function stateToSnapshot(state: SimulationState, dateStr: string): DailyS
   const liquidityRatio = totalDebt > 0 ? liquidAssets / totalDebt : liquidAssets > 0 ? Infinity : 0;
 
   // Shock Resilience Index: 0-100, based on balance stability
-  const sri = Math.max(
-    0,
-    Math.min(100, 100 - state.shockCount * 10 + state.recoveryDays * 2),
-  );
+  const sri = Math.max(0, Math.min(100, 100 - state.shockCount * 10 + state.recoveryDays * 2));
+
+  // Shock Clustering Density: shocks in last 30 days / 30
+  const recentWindow = 30;
+  const recentShocks = state.shockDays.filter((d) => d >= state.day - recentWindow).length;
+  const shockClusteringDensity = recentShocks / recentWindow;
 
   return {
     day: state.day,
@@ -99,6 +120,9 @@ export function stateToSnapshot(state: SimulationState, dateStr: string): DailyS
     creditScore: state.creditScore,
     liquidityRatio: liquidityRatio === Infinity ? 999 : liquidityRatio,
     shockResilienceIndex: sri,
+    shockClusteringDensity,
+    recoverySlope: state.currentRecoverySlope,
+    taxPaid: 0, // filled per-day during step
   };
 }
 
@@ -137,8 +161,10 @@ export function snapshotState(state: SimulationState): SimulationState {
       ...state,
       balance: undefined,
       totalRealizedGains: undefined,
+      totalTaxPaid: undefined,
     } as unknown as SimulationState),
     balance: new Decimal(state.balance.toString()),
     totalRealizedGains: new Decimal(state.totalRealizedGains.toString()),
+    totalTaxPaid: new Decimal(state.totalTaxPaid.toString()),
   };
 }

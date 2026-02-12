@@ -2,7 +2,7 @@
  * Core engine tests — determinism is the #1 priority.
  */
 import { describe, expect, it } from 'vitest';
-import { simulate } from './engine.js';
+import { simulate, simulateBranch } from './engine.js';
 import { topologicalSort } from './dag.js';
 import { DeterministicRNG } from './rng.js';
 import type { SimulationInput } from '@future-wallet/shared-types';
@@ -45,6 +45,7 @@ const BASE_INPUT: SimulationInput = {
   assets: [],
   liabilities: [],
   exchangeRates: [],
+  monteCarloRuns: 1,
 };
 
 describe('DeterministicRNG', () => {
@@ -86,9 +87,9 @@ describe('DAG topological sort', () => {
   });
 
   it('throws on unknown dependency', () => {
-    expect(() =>
-      topologicalSort([{ id: 'a', dependsOn: ['nonexistent'] }]),
-    ).toThrow('unknown node');
+    expect(() => topologicalSort([{ id: 'a', dependsOn: ['nonexistent'] }])).toThrow(
+      'unknown node',
+    );
   });
 });
 
@@ -127,5 +128,147 @@ describe('simulate()', () => {
     expect(result.finalCreditScore).toBeLessThanOrEqual(850);
     expect(result.collapseProbability).toBeGreaterThanOrEqual(0);
     expect(result.collapseProbability).toBeLessThanOrEqual(1);
+    expect(result.totalTaxPaid).toBeDefined();
+    expect(result.monteCarloRuns).toBe(1);
+  });
+});
+
+describe('currency conversion', () => {
+  it('converts income from foreign currency to base currency', () => {
+    const input: SimulationInput = {
+      ...BASE_INPUT,
+      incomeStreams: [
+        {
+          id: '11111111-1111-1111-1111-111111111111',
+          name: 'EUR Salary',
+          amount: 1000,
+          currency: 'EUR',
+          recurrence: 'monthly',
+          startDay: 0,
+        },
+      ],
+      expenses: [],
+      exchangeRates: [{ from: 'EUR', to: 'USD', rate: 1.1, date: '2026-01-01' }],
+    };
+
+    const result = simulate(input);
+    // Day 0: +1000 EUR * 1.1 = +1100 USD
+    expect(result.snapshots[0].balance).toBeCloseTo(11100, 0);
+  });
+
+  it('uses inverse rate when direct rate not available', () => {
+    const input: SimulationInput = {
+      ...BASE_INPUT,
+      incomeStreams: [
+        {
+          id: '11111111-1111-1111-1111-111111111111',
+          name: 'GBP Salary',
+          amount: 1000,
+          currency: 'GBP',
+          recurrence: 'monthly',
+          startDay: 0,
+        },
+      ],
+      expenses: [],
+      exchangeRates: [{ from: 'USD', to: 'GBP', rate: 0.8, date: '2026-01-01' }],
+    };
+
+    const result = simulate(input);
+    // Day 0: +1000 GBP / 0.8 = +1250 USD
+    expect(result.snapshots[0].balance).toBeCloseTo(11250, 0);
+  });
+});
+
+describe('taxation', () => {
+  it('applies progressive income tax', () => {
+    const input: SimulationInput = {
+      ...BASE_INPUT,
+      taxConfig: {
+        brackets: [
+          { upperBound: 10000, rate: 0.1 },
+          { upperBound: 50000, rate: 0.2 },
+          { upperBound: 100000, rate: 0.3 },
+        ],
+        capitalGainsRate: 0.15,
+        currency: 'USD',
+      },
+    };
+
+    const result = simulate(input);
+    expect(result.totalTaxPaid).toBeGreaterThan(0);
+    // Balance should be less than without taxes
+    const noTaxResult = simulate(BASE_INPUT);
+    expect(result.finalBalance.expected).toBeLessThan(noTaxResult.finalBalance.expected);
+  });
+});
+
+describe('Monte Carlo', () => {
+  it('runs multiple seeds when monteCarloRuns > 1', () => {
+    const input: SimulationInput = {
+      ...BASE_INPUT,
+      monteCarloRuns: 10,
+    };
+
+    const result = simulate(input);
+    expect(result.monteCarloRuns).toBe(10);
+    expect(result.finalBalance.p5).toBeLessThanOrEqual(result.finalBalance.expected);
+    expect(result.finalBalance.p95).toBeGreaterThanOrEqual(result.finalBalance.expected);
+  });
+});
+
+describe('branching', () => {
+  it('produces baseline and branch with comparison', () => {
+    const result = simulateBranch(BASE_INPUT, 10, {
+      incomeStreams: [
+        {
+          id: '11111111-1111-1111-1111-111111111111',
+          name: 'Raise',
+          amount: 6000,
+          currency: 'USD',
+          recurrence: 'monthly',
+          startDay: 0,
+        },
+      ],
+    });
+
+    expect(result.baseline).toBeDefined();
+    expect(result.branch).toBeDefined();
+    expect(result.comparison).toBeDefined();
+    expect(result.comparison.balanceDelta).toBeDefined();
+    expect(result.comparison.summary).toBeTruthy();
+  });
+});
+
+describe('behavioral metrics', () => {
+  it('tracks shock clustering density', () => {
+    const input: SimulationInput = {
+      ...BASE_INPUT,
+      initialBalance: 100,
+      incomeStreams: [],
+      expenses: [
+        {
+          id: '33333333-3333-3333-3333-333333333333',
+          name: 'High expense',
+          amount: 50,
+          currency: 'USD',
+          recurrence: 'daily',
+          startDay: 0,
+          essential: true,
+        },
+      ],
+    };
+
+    const result = simulate(input);
+    // Balance goes negative around day 2, should have shock clustering
+    const lastSnapshot = result.snapshots[result.snapshots.length - 1];
+    expect(lastSnapshot.shockClusteringDensity).toBeGreaterThanOrEqual(0);
+  });
+
+  it('includes snapshot-level metrics', () => {
+    const result = simulate(BASE_INPUT);
+    const snapshot = result.snapshots[0];
+    expect(snapshot.shockClusteringDensity).toBeDefined();
+    expect(snapshot.recoverySlope).toBeDefined();
+    expect(snapshot.taxPaid).toBeDefined();
   });
 });

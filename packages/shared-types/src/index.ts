@@ -41,7 +41,14 @@ export type Asset = z.infer<typeof AssetSchema>;
 
 // ─── Income & Expense ───────────────────────────────────────────────────────────
 
-export const RecurrenceSchema = z.enum(['daily', 'weekly', 'biweekly', 'monthly', 'yearly', 'once']);
+export const RecurrenceSchema = z.enum([
+  'daily',
+  'weekly',
+  'biweekly',
+  'monthly',
+  'yearly',
+  'once',
+]);
 export type Recurrence = z.infer<typeof RecurrenceSchema>;
 
 export const IncomeStreamSchema = z.object({
@@ -108,6 +115,7 @@ export const SimulationInputSchema = z.object({
   liabilities: z.array(LiabilitySchema).default([]),
   exchangeRates: z.array(ExchangeRateSchema).default([]),
   taxConfig: TaxConfigSchema.optional(),
+  monteCarloRuns: z.number().int().min(1).max(100).default(1), // number of MC seeds to run
 });
 export type SimulationInput = z.infer<typeof SimulationInputSchema>;
 
@@ -125,27 +133,18 @@ export const DailySnapshotSchema = z.object({
   creditScore: z.number().min(0).max(850),
   liquidityRatio: z.number(), // liquid assets / total liabilities
   shockResilienceIndex: z.number().min(0).max(100),
+  shockClusteringDensity: z.number().min(0).default(0), // frequency * intensity of shocks
+  recoverySlope: z.number().default(0), // rate of balance restoration after deficit
+  taxPaid: z.number().default(0), // tax deducted this day
 });
 export type DailySnapshot = z.infer<typeof DailySnapshotSchema>;
 
 // ─── Financial Health Indicators ────────────────────────────────────────────────
 
-export const VibeStateSchema = z.enum([
-  'thriving',
-  'stable',
-  'strained',
-  'critical',
-  'collapsed',
-]);
+export const VibeStateSchema = z.enum(['thriving', 'stable', 'strained', 'critical', 'collapsed']);
 export type VibeState = z.infer<typeof VibeStateSchema>;
 
-export const PetStateSchema = z.enum([
-  'happy',
-  'content',
-  'anxious',
-  'distressed',
-  'fainted',
-]);
+export const PetStateSchema = z.enum(['happy', 'content', 'anxious', 'distressed', 'fainted']);
 export type PetState = z.infer<typeof PetStateSchema>;
 
 // ─── Simulation Output ──────────────────────────────────────────────────────────
@@ -182,6 +181,12 @@ export const SimulationOutputSchema = z.object({
   // Assets
   finalNAV: z.number(),
   finalLiquidityRatio: z.number(),
+
+  // Tax
+  totalTaxPaid: z.number().default(0),
+
+  // Monte Carlo metadata
+  monteCarloRuns: z.number().int().default(1),
 });
 export type SimulationOutput = z.infer<typeof SimulationOutputSchema>;
 
@@ -197,9 +202,20 @@ export const BranchRequestSchema = z.object({
 });
 export type BranchRequest = z.infer<typeof BranchRequestSchema>;
 
+export const BranchComparisonSchema = z.object({
+  balanceDelta: z.number(),
+  collapseProbDelta: z.number(),
+  creditScoreDelta: z.number(),
+  navDelta: z.number(),
+  vibeImproved: z.boolean(),
+  summary: z.string(),
+});
+export type BranchComparison = z.infer<typeof BranchComparisonSchema>;
+
 export const BranchResultSchema = z.object({
   baseline: SimulationOutputSchema,
   branch: SimulationOutputSchema,
   branchAtDay: z.number().int().nonnegative(),
+  comparison: BranchComparisonSchema,
 });
 export type BranchResult = z.infer<typeof BranchResultSchema>;
