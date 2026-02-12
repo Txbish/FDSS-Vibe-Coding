@@ -413,14 +413,18 @@ main (protected)
 ### Milestone 3: API Hardening
 
 **Branch:** `backend/milestone-3-api-hardening`
-**Status:** PENDING
+**Status:** COMPLETE
 
-| #   | Task                                | Status  |
-| --- | ----------------------------------- | ------- |
-| 1   | Add vitest + test infrastructure    | PENDING |
-| 2-6 | Endpoint tests                      | PENDING |
-| 7   | Structured error responses          | PENDING |
-| 8   | Request validation & payload limits | PENDING |
+| #   | Task                                    | Status |
+| --- | --------------------------------------- | ------ |
+| 1   | Extract buildApp() factory for testing  | DONE   |
+| 2   | Structured error responses (ApiError)   | DONE   |
+| 3   | Request validation & 1 MB payload limit | DONE   |
+| 4   | POST /simulate/compare endpoint         | DONE   |
+| 5   | Add vitest + test infrastructure        | DONE   |
+| 6   | Comprehensive endpoint tests (26 tests) | DONE   |
+
+**Test counts:** 26 API tests, 212 total across all packages (69 + 117 + 26)
 
 ### Milestone 4: Integration Tests
 
