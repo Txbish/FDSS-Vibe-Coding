@@ -64,7 +64,7 @@ export function SimulationForm({ onSubmit, loading }: SimulationFormProps) {
 
   return (
     <form className="form-section" onSubmit={handleSubmit}>
-      <h2>⚙️ Simulation Parameters</h2>
+      <h2>Simulation Parameters</h2>
       <div className="form-grid">
         <div className="form-group">
           <label>Initial Balance ($)</label>
@@ -86,11 +86,7 @@ export function SimulationForm({ onSubmit, loading }: SimulationFormProps) {
         </div>
         <div className="form-group">
           <label>Seed</label>
-          <input
-            type="number"
-            value={seed}
-            onChange={(e) => setSeed(Number(e.target.value))}
-          />
+          <input type="number" value={seed} onChange={(e) => setSeed(Number(e.target.value))} />
         </div>
         <div className="form-group">
           <label>Base Currency</label>
@@ -128,7 +124,7 @@ export function SimulationForm({ onSubmit, loading }: SimulationFormProps) {
       </div>
       <div style={{ marginTop: '1rem' }}>
         <button type="submit" className="primary" disabled={loading}>
-          {loading ? '⏳ Simulating…' : '🚀 Run Simulation'}
+          {loading ? 'Simulating...' : 'Run Simulation'}
         </button>
       </div>
     </form>
