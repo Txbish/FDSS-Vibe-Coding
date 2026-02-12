@@ -1,0 +1,26 @@
+# dependencies
+node_modules/
+
+# build outputs
+dist/
+.turbo/
+
+# environment
+.env
+.env.local
+.env.*.local
+
+# IDE
+.vscode/settings.json
+.idea/
+
+# OS
+.DS_Store
+Thumbs.db
+
+# test coverage
+coverage/
+
+# misc
+*.tsbuildinfo
+*.log
