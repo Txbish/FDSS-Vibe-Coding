@@ -428,23 +428,31 @@ main (protected)
 
 ### Milestone 4: Integration Tests
 
-**Branch:** `backend/milestone-4-integration`
-**Status:** PENDING
+**Branch:** `backend/milestone-4-5-final`
+**Status:** COMPLETE
 
-| #   | Task                            | Status  |
-| --- | ------------------------------- | ------- |
-| 1-5 | Integration & validation suites | PENDING |
+| #   | Task                                                                       | Status |
+| --- | -------------------------------------------------------------------------- | ------ |
+| 1   | E2E determinism through API layer (bit-exact)                              | DONE   |
+| 2   | Complex multi-asset scenario validation (7 tests)                          | DONE   |
+| 3   | Precision drift validation through API (4 tests)                           | DONE   |
+| 4   | Branch comparison integration (4 tests)                                    | DONE   |
+| 5   | Edge cases: empty portfolio, daily expenses, deficit, concurrent (5 tests) | DONE   |
+
+**Test counts:** 22 integration tests, 48 API tests total, 234 across all packages (69 + 117 + 48)
 
 ### Milestone 5: Polish
 
-**Branch:** `backend/milestone-5-polish`
-**Status:** PENDING
+**Branch:** `backend/milestone-4-5-final`
+**Status:** COMPLETE
 
-| #   | Task                          | Status  |
-| --- | ----------------------------- | ------- |
-| 1   | Update CI for all test suites | PENDING |
-| 2   | Final spec status update      | PENDING |
-| 3   | Final lint/format/typecheck   | PENDING |
+| #   | Task                                       | Status |
+| --- | ------------------------------------------ | ------ |
+| 1   | Add typecheck step to CI workflow          | DONE   |
+| 2   | Full lint/format/typecheck pass (0 errors) | DONE   |
+| 3   | Final spec tracker update                  | DONE   |
+
+**Final totals:** 234 tests across 3 packages, all passing. CI runs lint + typecheck + build + test.
 
 ---
 
