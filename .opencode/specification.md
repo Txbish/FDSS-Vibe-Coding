@@ -378,31 +378,37 @@ main (protected)
 ### Milestone 1: Shared Types & Backend Spec
 
 **Branch:** `backend/milestone-1-types-and-spec`
-**Status:** IN PROGRESS
+**Status:** COMPLETE (PR pending merge)
 
-| #   | Task                                                 | Status      |
-| --- | ---------------------------------------------------- | ----------- |
-| 1   | Create backend specification doc                     | IN PROGRESS |
-| 2   | Add Monte Carlo config and tax output fields         | PENDING     |
-| 3   | Add exchange rate volatility and conversion tracking | PENDING     |
-| 4   | Add branch comparison result schema                  | PENDING     |
-| 5   | Add schema validation test suite                     | PENDING     |
+| #   | Task                                                 | Status |
+| --- | ---------------------------------------------------- | ------ |
+| 1   | Create backend specification doc                     | DONE   |
+| 2   | Add Monte Carlo config and tax output fields         | DONE   |
+| 3   | Add exchange rate volatility and conversion tracking | DONE   |
+| 4   | Add branch comparison result schema                  | DONE   |
+| 5   | Add schema validation test suite (69 tests)          | DONE   |
 
 ### Milestone 2: Engine Feature Completion
 
 **Branch:** `backend/milestone-2-engine-features`
-**Status:** PENDING
+**Status:** COMPLETE (PR pending merge)
 
-| #    | Task                                                 | Status  |
-| ---- | ---------------------------------------------------- | ------- |
-| 1    | Implement progressive tax bracket system             | PENDING |
-| 2    | Implement multi-currency exchange rate engine        | PENDING |
-| 3    | Implement Monte Carlo simulation                     | PENDING |
-| 4    | Enhance asset liquidation with type-aware priorities | PENDING |
-| 5    | Add conditional DAG component activation             | PENDING |
-| 6    | Implement branch comparison utilities                | PENDING |
-| 7    | Add snapshot restoration validation                  | PENDING |
-| 8-12 | Comprehensive test suites                            | PENDING |
+| #   | Task                                                   | Status |
+| --- | ------------------------------------------------------ | ------ |
+| 1   | Implement progressive tax bracket system (`tax.ts`)    | DONE   |
+| 2   | Implement multi-currency FX engine (`fx.ts`)           | DONE   |
+| 3   | Implement branch comparison utilities (`branch.ts`)    | DONE   |
+| 4   | Rewrite engine: FX, tax, Monte Carlo integration       | DONE   |
+| 5   | Enhanced liquidation: liquid→volatile→yield_generating | DONE   |
+| 6   | Component activation via startDay/endDay               | DONE   |
+| 7   | Monte Carlo p5/p95 via seed offsets                    | DONE   |
+| 8   | Tax tests (18 tests)                                   | DONE   |
+| 9   | FX tests (21 tests)                                    | DONE   |
+| 10  | Branch tests (5 tests)                                 | DONE   |
+| 11  | Engine integration tests (42 tests)                    | DONE   |
+| 12  | Spec validation tests (22 tests)                       | DONE   |
+
+**Test totals:** 117 engine tests + 69 shared-types tests = 186 tests passing
 
 ### Milestone 3: API Hardening
 
@@ -442,34 +448,34 @@ main (protected)
 
 Cross-reference against `specification.txt` sections:
 
-| Spec Section | Requirement                     | Implementation                        | Status                |
-| ------------ | ------------------------------- | ------------------------------------- | --------------------- |
-| 1.1          | Determinism (bit-exact)         | Seeded RNG, Decimal.js, DAG           | DONE                  |
-| 1.1          | Daily granularity               | Day-step loop                         | DONE                  |
-| 1.1          | DAG dependency resolution       | Kahn's algorithm, topo sort           | DONE                  |
-| 2.1          | Multi-currency exchange         | `fx.ts` with RNG-based daily rates    | PENDING               |
-| 2.1          | Conversion at transaction time  | Applied in income/expense processing  | PENDING               |
-| 2.1          | Floating-point precision        | Decimal.js for all conversions        | PENDING               |
-| 2.2          | Asset valuation (4 types)       | Daily volatility + yield              | DONE                  |
-| 2.2          | Auto-liquidation                | Deficit-triggered, penalty-aware      | PARTIAL (liquid only) |
-| 2.2          | Lock mechanics                  | `locked` + `lockUntilDay`             | DONE                  |
-| 2.3          | Credit evolution                | Gradual scoring model                 | DONE                  |
-| 2.3          | Progressive tax brackets        | `tax.ts`                              | PENDING               |
-| 2.3          | Capital gains distinction       | Realized vs unrealized tracking       | PENDING               |
-| 3.1          | DAG activation order            | Topological sort                      | DONE                  |
-| 3.1          | Structural changes (activation) | startDay/endDay conditional execution | PARTIAL               |
-| 3.1          | Prevent inconsistent states     | DAG ensures ordering                  | DONE                  |
-| 3.2          | Shock clustering density        | `shockCount` tracking                 | DONE                  |
-| 3.2          | Recovery slope                  | `recoveryDays` tracking               | DONE                  |
-| 3.2          | Vibe & Pet state                | Derived from quantitative metrics     | DONE                  |
-| 3.3          | Branching (what-if)             | `simulateBranch()`                    | DONE                  |
-| 3.3          | Merging (comparison)            | `compareBranches()`                   | PENDING               |
-| 4            | Balance distribution (p5/p95)   | Monte Carlo with N runs               | PENDING               |
-| 4            | Collapse probability & timing   | Tracked in behavioral metrics         | DONE                  |
-| 4            | Vibe & Pet state output         | In SimulationOutput                   | DONE                  |
-| 4            | Credit score & RSI              | In SimulationOutput                   | DONE                  |
-| 4            | NAV & Liquidity ratio           | In DailySnapshot                      | DONE                  |
-| 5            | Precision drift validation      | Test suite                            | PENDING               |
-| 5            | Snapshot restoration fidelity   | Test suite                            | PENDING               |
-| 5            | Tax-gain alignment              | Test suite                            | PENDING               |
-| 5            | DAG consistency                 | Test suite                            | PENDING               |
+| Spec Section | Requirement                     | Implementation                             | Status |
+| ------------ | ------------------------------- | ------------------------------------------ | ------ |
+| 1.1          | Determinism (bit-exact)         | Seeded RNG, Decimal.js, DAG                | DONE   |
+| 1.1          | Daily granularity               | Day-step loop                              | DONE   |
+| 1.1          | DAG dependency resolution       | Kahn's algorithm, topo sort                | DONE   |
+| 2.1          | Multi-currency exchange         | `fx.ts` with RNG-based daily rates         | DONE   |
+| 2.1          | Conversion at transaction time  | Applied in income/expense processing       | DONE   |
+| 2.1          | Floating-point precision        | Decimal.js for all conversions             | DONE   |
+| 2.2          | Asset valuation (4 types)       | Daily volatility + yield                   | DONE   |
+| 2.2          | Auto-liquidation                | Type-aware cascade (liquid→volatile→yield) | DONE   |
+| 2.2          | Lock mechanics                  | `locked` + `lockUntilDay`                  | DONE   |
+| 2.3          | Credit evolution                | Gradual scoring model                      | DONE   |
+| 2.3          | Progressive tax brackets        | `tax.ts` with marginal rate calc           | DONE   |
+| 2.3          | Capital gains distinction       | Realized gains tracking + CGT              | DONE   |
+| 3.1          | DAG activation order            | Topological sort                           | DONE   |
+| 3.1          | Structural changes (activation) | startDay/endDay conditional execution      | DONE   |
+| 3.1          | Prevent inconsistent states     | DAG ensures ordering                       | DONE   |
+| 3.2          | Shock clustering density        | `shockCount` tracking                      | DONE   |
+| 3.2          | Recovery slope                  | `recoveryDays` tracking                    | DONE   |
+| 3.2          | Vibe & Pet state                | Derived from quantitative metrics          | DONE   |
+| 3.3          | Branching (what-if)             | `simulateBranch()`                         | DONE   |
+| 3.3          | Merging (comparison)            | `compareBranches()` + delta analysis       | DONE   |
+| 4            | Balance distribution (p5/p95)   | Monte Carlo with N runs + seed offsets     | DONE   |
+| 4            | Collapse probability & timing   | Tracked across MC runs                     | DONE   |
+| 4            | Vibe & Pet state output         | In SimulationOutput                        | DONE   |
+| 4            | Credit score & RSI              | In SimulationOutput                        | DONE   |
+| 4            | NAV & Liquidity ratio           | In DailySnapshot                           | DONE   |
+| 5            | Precision drift validation      | spec-validation.test.ts                    | DONE   |
+| 5            | Snapshot restoration fidelity   | spec-validation.test.ts                    | DONE   |
+| 5            | Tax-gain alignment              | spec-validation.test.ts                    | DONE   |
+| 5            | DAG consistency                 | spec-validation.test.ts                    | DONE   |
