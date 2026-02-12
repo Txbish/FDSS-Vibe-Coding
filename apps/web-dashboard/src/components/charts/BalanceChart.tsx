@@ -32,6 +32,12 @@ export function BalanceChart({ snapshots, branchSnapshots, collapseDay }: Balanc
       : {}),
   }));
 
+  const startBalance = data[0]?.balance ?? 0;
+  const endBalance = data[data.length - 1]?.balance ?? 0;
+  const change = endBalance - startBalance;
+  const changeLabel = change >= 0 ? `+${formatCurrency(change)}` : formatCurrency(change);
+  const changeColor = change >= 0 ? 'text-success' : 'text-danger';
+
   return (
     <div className="rounded-xl border border-border bg-surface p-4 sm:p-6">
       <div className="flex items-center gap-2 mb-1">
@@ -40,6 +46,7 @@ export function BalanceChart({ snapshots, branchSnapshots, collapseDay }: Balanc
           title="Balance Trajectory"
           content="This chart shows your cash balance (solid line) and Net Asset Value (dashed line) over the simulation period. The NAV includes the value of all your assets converted to your base currency."
         />
+        <span className={`ml-auto text-xs font-semibold ${changeColor}`}>{changeLabel}</span>
       </div>
       <p className="text-xs text-ink-muted mb-4">
         Track how your cash and total asset value evolve day by day
@@ -94,7 +101,7 @@ export function BalanceChart({ snapshots, branchSnapshots, collapseDay }: Balanc
               formatter={(value: number, name: string) => [
                 formatCurrency(value),
                 name === 'balance'
-                  ? 'Balance'
+                  ? 'Cash Balance'
                   : name === 'nav'
                     ? 'Net Asset Value'
                     : name === 'branchBalance'
@@ -110,7 +117,7 @@ export function BalanceChart({ snapshots, branchSnapshots, collapseDay }: Balanc
               height={36}
               formatter={(value: string) =>
                 value === 'balance'
-                  ? 'Balance'
+                  ? 'Cash Balance'
                   : value === 'nav'
                     ? 'Net Asset Value'
                     : value === 'branchBalance'
@@ -123,6 +130,19 @@ export function BalanceChart({ snapshots, branchSnapshots, collapseDay }: Balanc
               wrapperStyle={{ fontSize: '12px' }}
             />
             <ReferenceLine y={0} stroke="#ef4444" strokeDasharray="4 4" strokeOpacity={0.5} />
+            {/* Starting balance reference */}
+            <ReferenceLine
+              y={startBalance}
+              stroke="#7a756c"
+              strokeDasharray="2 6"
+              strokeOpacity={0.3}
+              label={{
+                value: `Start: ${formatCurrency(startBalance)}`,
+                position: 'insideTopLeft',
+                fontSize: 9,
+                fill: '#7a756c',
+              }}
+            />
             {collapseDay != null && (
               <ReferenceLine
                 x={collapseDay}

@@ -15,6 +15,7 @@ import {
   Users,
   Zap,
 } from 'lucide-react';
+import { HeroGlobe } from '../components/HeroGlobe';
 import {
   Area,
   AreaChart,
@@ -156,40 +157,48 @@ export function LandingPage() {
   return (
     <div className="overflow-x-hidden">
       {/* ==================== HERO ==================== */}
-      <section className="relative py-20 sm:py-28 lg:py-36">
+      <section className="relative py-16 sm:py-20 lg:py-28 overflow-hidden">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="max-w-3xl mx-auto text-center">
-            <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-rust/10 text-rust text-xs font-medium mb-6">
-              <Zap className="w-3 h-3" />
-              DATAFEST 2026 — Financial Simulation Platform
+          <div className="grid lg:grid-cols-2 gap-8 lg:gap-12 items-center">
+            {/* Left — Copy */}
+            <div className="text-center lg:text-left">
+              <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-rust/10 text-rust text-xs font-medium mb-6">
+                <Zap className="w-3 h-3" />
+                DATAFEST 2026 — Financial Simulation Platform
+              </div>
+              <h1 className="text-4xl sm:text-5xl lg:text-6xl font-extrabold text-ink tracking-tight leading-[1.1] mb-6">
+                Know Your Financial Future <span className="text-rust">Before It Happens</span>
+              </h1>
+              <p className="text-lg sm:text-xl text-ink-muted leading-relaxed mb-4 max-w-2xl lg:max-w-none">
+                Future Wallet simulates your complete financial life — income, expenses, debt,
+                assets, taxes, and exchange rates — day by day, for up to 10 years. See every
+                possible outcome before making a single decision.
+              </p>
+              <p className="text-sm text-ink-muted/80 mb-8 max-w-xl lg:max-w-none">
+                Trusted by financial planners. Built for anyone who wants to make smarter money
+                decisions with data, not guesswork.
+              </p>
+              <div className="flex flex-col sm:flex-row items-center lg:items-start justify-center lg:justify-start gap-3">
+                <Link
+                  to="/simulate"
+                  className="flex items-center gap-2 px-7 py-3.5 rounded-xl bg-rust text-white font-semibold text-sm hover:bg-rust-light shadow-sm hover:shadow-md transition-all"
+                >
+                  <Play className="w-4 h-4" />
+                  Try the Simulator Free
+                </Link>
+                <Link
+                  to="/learn"
+                  className="flex items-center gap-2 px-7 py-3.5 rounded-xl border border-border text-ink font-semibold text-sm hover:bg-surface-alt transition-all"
+                >
+                  How It Works
+                  <ArrowRight className="w-4 h-4" />
+                </Link>
+              </div>
             </div>
-            <h1 className="text-4xl sm:text-5xl lg:text-6xl font-extrabold text-ink tracking-tight leading-[1.1] mb-6">
-              Know Your Financial Future <span className="text-rust">Before It Happens</span>
-            </h1>
-            <p className="text-lg sm:text-xl text-ink-muted leading-relaxed mb-4 max-w-2xl mx-auto">
-              Future Wallet simulates your complete financial life — income, expenses, debt, assets,
-              taxes, and exchange rates — day by day, for up to 10 years. See every possible outcome
-              before making a single decision.
-            </p>
-            <p className="text-sm text-ink-muted/80 mb-8 max-w-xl mx-auto">
-              Trusted by financial planners. Built for anyone who wants to make smarter money
-              decisions with data, not guesswork.
-            </p>
-            <div className="flex flex-col sm:flex-row items-center justify-center gap-3">
-              <Link
-                to="/simulate"
-                className="flex items-center gap-2 px-7 py-3.5 rounded-xl bg-rust text-white font-semibold text-sm hover:bg-rust-light shadow-sm hover:shadow-md transition-all"
-              >
-                <Play className="w-4 h-4" />
-                Try the Simulator Free
-              </Link>
-              <Link
-                to="/learn"
-                className="flex items-center gap-2 px-7 py-3.5 rounded-xl border border-border text-ink font-semibold text-sm hover:bg-surface-alt transition-all"
-              >
-                How It Works
-                <ArrowRight className="w-4 h-4" />
-              </Link>
+
+            {/* Right — Globe */}
+            <div className="hidden lg:block h-[420px] xl:h-[480px]">
+              <HeroGlobe />
             </div>
           </div>
         </div>

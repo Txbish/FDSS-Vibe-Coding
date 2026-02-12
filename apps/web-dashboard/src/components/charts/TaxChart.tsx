@@ -7,6 +7,7 @@ import {
   Tooltip,
   XAxis,
   YAxis,
+  Legend,
 } from 'recharts';
 import { formatCurrency } from '../../utils';
 import { InfoTip } from '../InfoTip';
@@ -33,6 +34,9 @@ export function TaxChart({ snapshots }: TaxChartProps) {
   const totalTax = data[data.length - 1]?.cumulativeTotal ?? 0;
   if (totalTax <= 0) return null;
 
+  const totalIncomeTax = data[data.length - 1]?.cumulativeTax ?? 0;
+  const totalCapGains = data[data.length - 1]?.cumulativeCapGains ?? 0;
+
   return (
     <div className="rounded-xl border border-border bg-surface p-4 sm:p-6">
       <div className="flex items-center gap-2 mb-1">
@@ -41,6 +45,9 @@ export function TaxChart({ snapshots }: TaxChartProps) {
           title="Cumulative Taxes"
           content="This shows the total taxes paid over the simulation period. Income tax is calculated using progressive tax brackets (each income range is taxed at a different rate). Capital gains tax applies when assets are liquidated at a profit."
         />
+        <span className="ml-auto text-xs font-semibold text-ink-muted">
+          Total: {formatCurrency(totalTax)}
+        </span>
       </div>
       <p className="text-xs text-ink-muted mb-4">
         Cumulative income tax and capital gains tax over time
@@ -90,6 +97,15 @@ export function TaxChart({ snapshots }: TaxChartProps) {
               ]}
               labelFormatter={(day: number) => `Day ${day}`}
             />
+            <Legend
+              verticalAlign="top"
+              height={36}
+              formatter={(value: string) =>
+                value === 'cumulativeTax' ? 'Income Tax' : 'Capital Gains Tax'
+              }
+              iconType="plainline"
+              wrapperStyle={{ fontSize: '12px' }}
+            />
             <Area
               type="monotone"
               dataKey="cumulativeTax"
@@ -110,6 +126,19 @@ export function TaxChart({ snapshots }: TaxChartProps) {
             />
           </AreaChart>
         </ResponsiveContainer>
+      </div>
+      {/* Breakdown summary */}
+      <div className="flex items-center justify-center gap-6 mt-3 text-[10px] text-ink-muted">
+        <span className="flex items-center gap-1">
+          <span className="w-2 h-2 rounded-full" style={{ backgroundColor: '#d4a044' }} />
+          Income Tax: {formatCurrency(totalIncomeTax)}
+        </span>
+        {totalCapGains > 0 && (
+          <span className="flex items-center gap-1">
+            <span className="w-2 h-2 rounded-full" style={{ backgroundColor: '#c85228' }} />
+            Capital Gains: {formatCurrency(totalCapGains)}
+          </span>
+        )}
       </div>
     </div>
   );

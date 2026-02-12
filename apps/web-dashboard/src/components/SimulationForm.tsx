@@ -25,6 +25,11 @@ import {
   GitBranch,
   Settings,
   Play,
+  User,
+  GraduationCap,
+  Briefcase,
+  PiggyBank,
+  Landmark,
 } from 'lucide-react';
 
 /* ------------------------------------------------------------------ */
@@ -72,6 +77,542 @@ const US_TAX_BRACKETS: TaxConfig = {
   capitalGainsRate: 0.15,
   currency: 'USD',
 };
+
+/* ------------------------------------------------------------------ */
+/*  Demo Presets                                                        */
+/* ------------------------------------------------------------------ */
+
+interface DemoPreset {
+  id: string;
+  name: string;
+  description: string;
+  icon: typeof GraduationCap;
+  initialBalance: number;
+  horizonDays: number;
+  baseCurrency: string;
+  monteCarloRuns: number;
+  taxEnabled: boolean;
+  incomes: IncomeStream[];
+  expenses: Expense[];
+  assets: Asset[];
+  liabilities: Liability[];
+  exchangeRates: ExchangeRate[];
+}
+
+const DEMO_PRESETS: DemoPreset[] = [
+  {
+    id: 'fresh-grad',
+    name: 'Fresh Graduate',
+    description:
+      'Entry-level salary, student loan, basic living expenses. See how a new grad builds stability.',
+    icon: GraduationCap,
+    initialBalance: 2000,
+    horizonDays: 365,
+    baseCurrency: 'USD',
+    monteCarloRuns: 100,
+    taxEnabled: false,
+    incomes: [
+      {
+        id: generateId(),
+        name: 'Junior Developer Salary',
+        amount: 4200,
+        currency: 'USD',
+        recurrence: 'monthly',
+        startDay: 0,
+      },
+    ],
+    expenses: [
+      {
+        id: generateId(),
+        name: 'Rent (Shared Apt)',
+        amount: 950,
+        currency: 'USD',
+        recurrence: 'monthly',
+        startDay: 0,
+        essential: true,
+      },
+      {
+        id: generateId(),
+        name: 'Food & Groceries',
+        amount: 25,
+        currency: 'USD',
+        recurrence: 'daily',
+        startDay: 0,
+        essential: true,
+      },
+      {
+        id: generateId(),
+        name: 'Transport',
+        amount: 120,
+        currency: 'USD',
+        recurrence: 'monthly',
+        startDay: 0,
+        essential: true,
+      },
+      {
+        id: generateId(),
+        name: 'Subscriptions & Fun',
+        amount: 150,
+        currency: 'USD',
+        recurrence: 'monthly',
+        startDay: 0,
+        essential: false,
+      },
+    ],
+    assets: [],
+    liabilities: [
+      {
+        id: generateId(),
+        name: 'Student Loan',
+        principal: 28000,
+        interestRate: 0.055,
+        currency: 'USD',
+        minimumPayment: 300,
+        remainingTermDays: 3650,
+      },
+    ],
+    exchangeRates: [],
+  },
+  {
+    id: 'freelancer',
+    name: 'Freelancer with Debt',
+    description:
+      'Irregular multi-stream income, credit card debt, moderate expenses. Tests cash flow volatility.',
+    icon: Briefcase,
+    initialBalance: 5000,
+    horizonDays: 365,
+    baseCurrency: 'USD',
+    monteCarloRuns: 200,
+    taxEnabled: false,
+    incomes: [
+      {
+        id: generateId(),
+        name: 'Web Dev Contracts',
+        amount: 3500,
+        currency: 'USD',
+        recurrence: 'biweekly',
+        startDay: 0,
+      },
+      {
+        id: generateId(),
+        name: 'Design Side Gigs',
+        amount: 1200,
+        currency: 'USD',
+        recurrence: 'monthly',
+        startDay: 5,
+      },
+      {
+        id: generateId(),
+        name: 'Affiliate Revenue',
+        amount: 80,
+        currency: 'USD',
+        recurrence: 'weekly',
+        startDay: 0,
+      },
+    ],
+    expenses: [
+      {
+        id: generateId(),
+        name: 'Rent',
+        amount: 1400,
+        currency: 'USD',
+        recurrence: 'monthly',
+        startDay: 0,
+        essential: true,
+      },
+      {
+        id: generateId(),
+        name: 'Food',
+        amount: 30,
+        currency: 'USD',
+        recurrence: 'daily',
+        startDay: 0,
+        essential: true,
+      },
+      {
+        id: generateId(),
+        name: 'Software Subscriptions',
+        amount: 250,
+        currency: 'USD',
+        recurrence: 'monthly',
+        startDay: 0,
+        essential: true,
+      },
+      {
+        id: generateId(),
+        name: 'Coworking Space',
+        amount: 200,
+        currency: 'USD',
+        recurrence: 'monthly',
+        startDay: 0,
+        essential: false,
+      },
+      {
+        id: generateId(),
+        name: 'Health Insurance',
+        amount: 450,
+        currency: 'USD',
+        recurrence: 'monthly',
+        startDay: 0,
+        essential: true,
+      },
+    ],
+    assets: [],
+    liabilities: [
+      {
+        id: generateId(),
+        name: 'Credit Card',
+        principal: 8500,
+        interestRate: 0.22,
+        currency: 'USD',
+        minimumPayment: 200,
+        remainingTermDays: 1825,
+      },
+    ],
+    exchangeRates: [],
+  },
+  {
+    id: 'mid-career',
+    name: 'Mid-Career Investor',
+    description:
+      'Solid salary, stock portfolio, mortgage, tax enabled. The full-featured scenario.',
+    icon: Landmark,
+    initialBalance: 25000,
+    horizonDays: 730,
+    baseCurrency: 'USD',
+    monteCarloRuns: 200,
+    taxEnabled: true,
+    incomes: [
+      {
+        id: generateId(),
+        name: 'Senior Engineer Salary',
+        amount: 9500,
+        currency: 'USD',
+        recurrence: 'monthly',
+        startDay: 0,
+      },
+      {
+        id: generateId(),
+        name: 'Annual Bonus',
+        amount: 15000,
+        currency: 'USD',
+        recurrence: 'yearly',
+        startDay: 60,
+      },
+    ],
+    expenses: [
+      {
+        id: generateId(),
+        name: 'Mortgage Payment',
+        amount: 2200,
+        currency: 'USD',
+        recurrence: 'monthly',
+        startDay: 0,
+        essential: true,
+      },
+      {
+        id: generateId(),
+        name: 'Food & Household',
+        amount: 40,
+        currency: 'USD',
+        recurrence: 'daily',
+        startDay: 0,
+        essential: true,
+      },
+      {
+        id: generateId(),
+        name: 'Car Payment',
+        amount: 380,
+        currency: 'USD',
+        recurrence: 'monthly',
+        startDay: 0,
+        essential: true,
+      },
+      {
+        id: generateId(),
+        name: 'Utilities & Internet',
+        amount: 250,
+        currency: 'USD',
+        recurrence: 'monthly',
+        startDay: 0,
+        essential: true,
+      },
+      {
+        id: generateId(),
+        name: 'Entertainment & Travel',
+        amount: 600,
+        currency: 'USD',
+        recurrence: 'monthly',
+        startDay: 0,
+        essential: false,
+      },
+      {
+        id: generateId(),
+        name: 'Child Education Fund',
+        amount: 500,
+        currency: 'USD',
+        recurrence: 'monthly',
+        startDay: 0,
+        essential: false,
+      },
+    ],
+    assets: [
+      {
+        id: generateId(),
+        name: 'S&P 500 Index Fund',
+        type: 'volatile',
+        value: 85000,
+        currency: 'USD',
+        volatility: 0.012,
+        yieldRate: 0.08,
+        liquidationPenalty: 0,
+        locked: false,
+      },
+      {
+        id: generateId(),
+        name: 'Savings Account',
+        type: 'liquid',
+        value: 15000,
+        currency: 'USD',
+        volatility: 0,
+        yieldRate: 0.045,
+        liquidationPenalty: 0,
+        locked: false,
+      },
+      {
+        id: generateId(),
+        name: 'Company Stock (RSUs)',
+        type: 'volatile',
+        value: 30000,
+        currency: 'USD',
+        volatility: 0.025,
+        yieldRate: 0,
+        liquidationPenalty: 0,
+        locked: true,
+      },
+    ],
+    liabilities: [
+      {
+        id: generateId(),
+        name: 'Mortgage',
+        principal: 280000,
+        interestRate: 0.065,
+        currency: 'USD',
+        minimumPayment: 2200,
+        remainingTermDays: 7300,
+      },
+      {
+        id: generateId(),
+        name: 'Car Loan',
+        principal: 18000,
+        interestRate: 0.049,
+        currency: 'USD',
+        minimumPayment: 380,
+        remainingTermDays: 1460,
+      },
+    ],
+    exchangeRates: [],
+  },
+  {
+    id: 'retiring',
+    name: 'Pre-Retirement',
+    description:
+      'High savings, yield-generating assets, low income needs. Conservative wealth preservation.',
+    icon: PiggyBank,
+    initialBalance: 50000,
+    horizonDays: 1095,
+    baseCurrency: 'USD',
+    monteCarloRuns: 300,
+    taxEnabled: true,
+    incomes: [
+      {
+        id: generateId(),
+        name: 'Part-time Consulting',
+        amount: 3000,
+        currency: 'USD',
+        recurrence: 'monthly',
+        startDay: 0,
+      },
+      {
+        id: generateId(),
+        name: 'Rental Income',
+        amount: 1800,
+        currency: 'USD',
+        recurrence: 'monthly',
+        startDay: 0,
+      },
+    ],
+    expenses: [
+      {
+        id: generateId(),
+        name: 'Living Expenses',
+        amount: 35,
+        currency: 'USD',
+        recurrence: 'daily',
+        startDay: 0,
+        essential: true,
+      },
+      {
+        id: generateId(),
+        name: 'Healthcare',
+        amount: 800,
+        currency: 'USD',
+        recurrence: 'monthly',
+        startDay: 0,
+        essential: true,
+      },
+      {
+        id: generateId(),
+        name: 'Property Tax & Maintenance',
+        amount: 400,
+        currency: 'USD',
+        recurrence: 'monthly',
+        startDay: 0,
+        essential: true,
+      },
+      {
+        id: generateId(),
+        name: 'Travel & Leisure',
+        amount: 500,
+        currency: 'USD',
+        recurrence: 'monthly',
+        startDay: 0,
+        essential: false,
+      },
+    ],
+    assets: [
+      {
+        id: generateId(),
+        name: 'Bond Portfolio',
+        type: 'yield_generating',
+        value: 200000,
+        currency: 'USD',
+        volatility: 0.003,
+        yieldRate: 0.05,
+        liquidationPenalty: 0.01,
+        locked: false,
+      },
+      {
+        id: generateId(),
+        name: 'Dividend Stocks',
+        type: 'volatile',
+        value: 150000,
+        currency: 'USD',
+        volatility: 0.008,
+        yieldRate: 0.035,
+        liquidationPenalty: 0,
+        locked: false,
+      },
+      {
+        id: generateId(),
+        name: 'Rental Property',
+        type: 'illiquid',
+        value: 320000,
+        currency: 'USD',
+        volatility: 0.001,
+        yieldRate: 0,
+        liquidationPenalty: 0.06,
+        locked: true,
+      },
+      {
+        id: generateId(),
+        name: 'Emergency Fund',
+        type: 'liquid',
+        value: 30000,
+        currency: 'USD',
+        volatility: 0,
+        yieldRate: 0.04,
+        liquidationPenalty: 0,
+        locked: false,
+      },
+    ],
+    liabilities: [],
+    exchangeRates: [],
+  },
+  {
+    id: 'global-nomad',
+    name: 'Global Digital Nomad',
+    description:
+      'Multi-currency income, EUR + USD expenses, FX volatility. Tests exchange rate features.',
+    icon: User,
+    initialBalance: 8000,
+    horizonDays: 365,
+    baseCurrency: 'USD',
+    monteCarloRuns: 150,
+    taxEnabled: false,
+    incomes: [
+      {
+        id: generateId(),
+        name: 'Remote Salary (EUR)',
+        amount: 4500,
+        currency: 'EUR',
+        recurrence: 'monthly',
+        startDay: 0,
+      },
+      {
+        id: generateId(),
+        name: 'YouTube Revenue',
+        amount: 600,
+        currency: 'USD',
+        recurrence: 'monthly',
+        startDay: 15,
+      },
+    ],
+    expenses: [
+      {
+        id: generateId(),
+        name: 'Accommodation (varies)',
+        amount: 1200,
+        currency: 'EUR',
+        recurrence: 'monthly',
+        startDay: 0,
+        essential: true,
+      },
+      {
+        id: generateId(),
+        name: 'Food & Transport',
+        amount: 20,
+        currency: 'EUR',
+        recurrence: 'daily',
+        startDay: 0,
+        essential: true,
+      },
+      {
+        id: generateId(),
+        name: 'US Phone & Subscriptions',
+        amount: 120,
+        currency: 'USD',
+        recurrence: 'monthly',
+        startDay: 0,
+        essential: true,
+      },
+      {
+        id: generateId(),
+        name: 'Travel Between Cities',
+        amount: 400,
+        currency: 'EUR',
+        recurrence: 'monthly',
+        startDay: 0,
+        essential: false,
+      },
+    ],
+    assets: [
+      {
+        id: generateId(),
+        name: 'Crypto Holdings',
+        type: 'volatile',
+        value: 5000,
+        currency: 'USD',
+        volatility: 0.04,
+        yieldRate: 0,
+        liquidationPenalty: 0,
+        locked: false,
+      },
+    ],
+    liabilities: [],
+    exchangeRates: [{ from: 'EUR', to: 'USD', rate: 1.08, date: '2026-01-01', volatility: 0.005 }],
+  },
+];
 
 /* ------------------------------------------------------------------ */
 /*  Sub-components                                                     */
@@ -266,6 +807,33 @@ export function SimulationForm({ onSubmit, onBranch, loading, hasResult }: Simul
   const toggleSection = (key: string) =>
     setOpenSections((prev) => ({ ...prev, [key]: !prev[key] }));
 
+  /* ---- Load preset ---- */
+  function loadPreset(preset: DemoPreset) {
+    setInitialBalance(preset.initialBalance);
+    setHorizonDays(preset.horizonDays);
+    setBaseCurrency(preset.baseCurrency);
+    setMonteCarloRuns(preset.monteCarloRuns);
+    setSeed(42);
+    setTaxEnabled(preset.taxEnabled);
+    // Re-generate IDs so each load produces fresh ids
+    setIncomes(preset.incomes.map((i) => ({ ...i, id: generateId() })));
+    setExpenses(preset.expenses.map((e) => ({ ...e, id: generateId() })));
+    setAssets(preset.assets.map((a) => ({ ...a, id: generateId() })));
+    setLiabilities(preset.liabilities.map((l) => ({ ...l, id: generateId() })));
+    setExchangeRates(preset.exchangeRates.map((r) => ({ ...r })));
+    // Open relevant sections
+    setOpenSections({
+      income: true,
+      expenses: true,
+      assets: preset.assets.length > 0,
+      liabilities: preset.liabilities.length > 0,
+      tax: preset.taxEnabled,
+      exchange: preset.exchangeRates.length > 0,
+      branch: false,
+      advanced: false,
+    });
+  }
+
   /* ---- Build input ---- */
   function buildInput(): SimulationInput {
     const input: SimulationInput = {
@@ -419,6 +987,40 @@ export function SimulationForm({ onSubmit, onBranch, loading, hasResult }: Simul
 
   return (
     <form onSubmit={handleSubmit} className="space-y-4">
+      {/* ---- Demo Presets ---- */}
+      <div className="rounded-xl border border-border bg-surface p-4 sm:p-6">
+        <div className="flex items-center gap-2 mb-3">
+          <User className="w-4 h-4 text-rust" />
+          <h3 className="text-sm font-semibold text-ink">Quick Start — Load a Demo Profile</h3>
+          <InfoTip content="Choose a preset scenario to populate the form with realistic data. You can customize any values after loading." />
+        </div>
+        <p className="text-xs text-ink-muted mb-3">
+          Select a profile to auto-fill the form, then customize as needed.
+        </p>
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2">
+          {DEMO_PRESETS.map((preset) => (
+            <button
+              key={preset.id}
+              type="button"
+              onClick={() => loadPreset(preset)}
+              className="flex items-start gap-3 p-3 rounded-lg border border-border bg-surface-alt hover:border-rust/40 hover:bg-rust/5 transition-all text-left group"
+            >
+              <div className="w-8 h-8 rounded-lg bg-rust/10 flex items-center justify-center shrink-0 group-hover:bg-rust/15 transition-colors">
+                <preset.icon className="w-4 h-4 text-rust" />
+              </div>
+              <div className="min-w-0">
+                <div className="text-xs font-semibold text-ink group-hover:text-rust transition-colors">
+                  {preset.name}
+                </div>
+                <div className="text-[10px] text-ink-muted leading-relaxed mt-0.5 line-clamp-2">
+                  {preset.description}
+                </div>
+              </div>
+            </button>
+          ))}
+        </div>
+      </div>
+
       {/* ---- Core Parameters ---- */}
       <div className="rounded-xl border border-border bg-surface p-4 sm:p-6 space-y-4">
         <div className="flex items-center gap-2 mb-2">

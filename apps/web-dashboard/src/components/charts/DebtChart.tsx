@@ -7,6 +7,7 @@ import {
   Tooltip,
   XAxis,
   YAxis,
+  Legend,
 } from 'recharts';
 import { formatCurrency } from '../../utils';
 import { InfoTip } from '../InfoTip';
@@ -24,6 +25,10 @@ export function DebtChart({ snapshots }: DebtChartProps) {
   const hasDebt = data.some((d) => d.totalDebt > 0);
   if (!hasDebt) return null;
 
+  const peakDebt = Math.max(...data.map((d) => d.totalDebt));
+  const endDebt = data[data.length - 1]?.totalDebt ?? 0;
+  const paidOff = peakDebt - endDebt;
+
   return (
     <div className="rounded-xl border border-border bg-surface p-4 sm:p-6">
       <div className="flex items-center gap-2 mb-1">
@@ -32,6 +37,11 @@ export function DebtChart({ snapshots }: DebtChartProps) {
           title="Debt Over Time"
           content="This shows your total outstanding debt across all liabilities. Debt accrues interest daily based on each liability's annual interest rate. The simulation makes minimum payments automatically when cash is available."
         />
+        {paidOff > 0 && (
+          <span className="ml-auto text-xs font-semibold text-success">
+            -{formatCurrency(paidOff)} paid off
+          </span>
+        )}
       </div>
       <p className="text-xs text-ink-muted mb-4">
         Outstanding debt trajectory including accrued interest
@@ -69,6 +79,13 @@ export function DebtChart({ snapshots }: DebtChartProps) {
               }}
               formatter={(value: number) => [formatCurrency(value), 'Total Debt']}
               labelFormatter={(day: number) => `Day ${day}`}
+            />
+            <Legend
+              verticalAlign="top"
+              height={36}
+              formatter={() => 'Total Debt'}
+              iconType="plainline"
+              wrapperStyle={{ fontSize: '12px' }}
             />
             <Area
               type="monotone"

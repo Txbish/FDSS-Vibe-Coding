@@ -3,7 +3,7 @@ import {
   Line,
   LineChart,
   CartesianGrid,
-  ReferenceLine,
+  ReferenceArea,
   ResponsiveContainer,
   Tooltip,
   XAxis,
@@ -29,6 +29,7 @@ export function CreditScoreChart({ snapshots }: CreditScoreChartProps) {
   }));
 
   const lastScore = data[data.length - 1]?.creditScore ?? 0;
+  const maxDay = data[data.length - 1]?.day ?? 0;
 
   return (
     <div className="rounded-xl border border-border bg-surface p-4 sm:p-6">
@@ -68,9 +69,34 @@ export function CreditScoreChart({ snapshots }: CreditScoreChartProps) {
               formatter={(value: number) => [formatNumber(value), 'Credit Score']}
               labelFormatter={(day: number) => `Day ${day}`}
             />
-            {/* Score zone reference lines */}
-            <ReferenceLine y={700} stroke="#22c55e" strokeDasharray="4 4" strokeOpacity={0.4} />
-            <ReferenceLine y={550} stroke="#f59e0b" strokeDasharray="4 4" strokeOpacity={0.4} />
+            {/* Zone fills for Good / Fair / Poor */}
+            <ReferenceArea
+              y1={700}
+              y2={850}
+              x1={0}
+              x2={maxDay}
+              fill="#22c55e"
+              fillOpacity={0.06}
+              label={{ value: 'Good', position: 'insideTopLeft', fontSize: 10, fill: '#22c55e' }}
+            />
+            <ReferenceArea
+              y1={550}
+              y2={700}
+              x1={0}
+              x2={maxDay}
+              fill="#f59e0b"
+              fillOpacity={0.05}
+              label={{ value: 'Fair', position: 'insideTopLeft', fontSize: 10, fill: '#f59e0b' }}
+            />
+            <ReferenceArea
+              y1={0}
+              y2={550}
+              x1={0}
+              x2={maxDay}
+              fill="#ef4444"
+              fillOpacity={0.04}
+              label={{ value: 'Poor', position: 'insideTopLeft', fontSize: 10, fill: '#ef4444' }}
+            />
             <Line
               type="monotone"
               dataKey="creditScore"
